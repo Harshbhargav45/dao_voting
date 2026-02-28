@@ -17,6 +17,34 @@ This platform empowers communities to manage their treasury and make collective 
   - **Resolve**: Automated winner selection and proposal closure based on community input.
 - **Full Transparency**: Every action, from token purchase to voting, is recorded immutably on the Solana ledger.
 
+## 🔱 Anchor Program Deep Dive
+
+The core logic of the DAO is handled by a sophisticated Anchor program that manages state, enforces governance rules, and handles financial transactions securely.
+
+### Program Instructions & Capabilities
+
+| Instruction | Category | Description |
+|:---|:---|:---|
+| `initialize_treasury` | **Admin** | Sets up the initial treasury state, including SOL price for tokens and tokens-per-purchase ratio. |
+| `configure_treasury_token_account` | **Admin** | Configures the associated token account for the DAO's treasury to hold community tokens. |
+| `withdraw_sol` | **Admin** | Allows the DAO authority to securely withdraw accumulated SOL from the treasury. |
+| `buy_tokens` | **Economy** | A decentralized exchange mechanism allowing users to swap SOL for governance tokens instantly. |
+| `register_voter` | **Governance** | Initializes a personal voter account for a user, enabling them to participate in DAO decisions. |
+| `register_proposal` | **Governance** | Allows any community member to submit a proposal by defining its information, deadline, and required voter threshold. |
+| `proposal_to_vote` | **Governance** | The heart of the DAO: allows voters to cast token-weighted votes on active proposals. |
+| `pick_winner` | **Governance** | An automated resolution mechanism to process voting results once a proposal's conditions are met. |
+| `close_proposal` | **Cleanup** | Securely closes spent proposal accounts to recover rent and optimize blockchain state. |
+| `close_voter` | **Cleanup** | Allows users to deregister and reclaim SOL from their voter account rent. |
+
+### Technical Highlights
+
+- **PDA-Based Security**: Uses Program Derived Addresses (PDAs) for treasury and voter accounts ensuring that only the program can sign for critical state changes.
+- **Strict Account Validation**: Leverages Anchor's powerful macros to validate every input account, preventing unauthorized access and common exploits.
+- **Custom Error Handling**: A detailed suite of custom errors (`VoteError`) provides clear feedback for failed transactions like "Deadline Passed" or "Insufficient Tokens."
+- **Event-Driven Design**: Emits structured events for all major actions, making it easy for frontends and indexers to track the live status of the DAO.
+- **Space Optimization**: Carefully calculated account sizes to minimize rent costs for community members.
+
+
 ## 🛠 Tech Stack
 
 ### Smart Contract (Solana)
