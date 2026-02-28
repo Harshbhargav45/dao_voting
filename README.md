@@ -21,7 +21,48 @@ This platform empowers communities to manage their treasury and make collective 
 
 The core logic of the DAO is handled by a sophisticated Anchor program that manages state, enforces governance rules, and handles financial transactions securely.
 
+### Architecture Overview
+
+The following diagram illustrates the relationship between users, program instructions, and on-chain state:
+
+```mermaid
+graph TD
+    subgraph Users
+        Admin[DAO Admin]
+        Voter[Community Member]
+        Proposer[Proposal Creator]
+    end
+
+    subgraph "Anchor Program (vote_app)"
+        Instructions[Program Instructions]
+        Validation{Account Validation}
+    end
+
+    subgraph "On-Chain State (PDAs)"
+        Treasury[Treasury Account]
+        VoterAcc[Voter Profile Account]
+        ProposalAcc[Proposal Account]
+        GlobalCounter[Proposal Counter]
+    end
+
+    Admin -->|initialize_treasury| Instructions
+    Voter -->|buy_tokens| Instructions
+    Voter -->|register_voter| Instructions
+    Proposer -->|register_proposal| Instructions
+    Voter -->|proposal_to_vote| Instructions
+
+    Instructions --> Validation
+    Validation -->|Updates| Treasury
+    Validation -->|Updates| VoterAcc
+    Validation -->|Updates| ProposalAcc
+    Validation -->|Increments| GlobalCounter
+
+    VoterAcc -.->|Token Balance Check| Validation
+    ProposalAcc -.->|Deadline Check| Validation
+```
+
 ### Program Instructions & Capabilities
+
 
 | Instruction | Category | Description |
 |:---|:---|:---|
