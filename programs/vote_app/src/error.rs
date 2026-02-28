@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 pub enum VoteError {
     #[msg("Deadline must be a future timestamp")]
     InvalidDeadline,
-    
+
     #[msg("Proposal counter has already been initialized")]
     ProposalCounterAlreadyInitialized,
 
@@ -25,7 +25,7 @@ pub enum VoteError {
 
     #[msg("You are not authorized to perform this action")]
     UnauthorizedAccess,
-    
+
     #[msg("Token mint does not match the expected mint")]
     TokenMintMismatch,
 

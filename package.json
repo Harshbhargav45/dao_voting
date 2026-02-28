@@ -1,6 +1,10 @@
 {
   "license": "ISC",
   "scripts": {
+    "dev": "npm --prefix app run dev",
+    "build:web": "npm --prefix app run build",
+    "start:web": "npm --prefix app run start",
+    "lint:web": "npm --prefix app run lint",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },

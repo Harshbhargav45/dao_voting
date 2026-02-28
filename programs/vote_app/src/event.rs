@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+
 #[event]
 pub struct ProposalCounterInitialized {
     pub authority: Pubkey,

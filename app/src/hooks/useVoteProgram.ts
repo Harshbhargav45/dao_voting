@@ -1,18 +1,25 @@
 "use client";
 
 import { useAnchorProvider } from "@/hooks/useAnchorProvider";
-import { Program } from "@coral-xyz/anchor";
+import { Program, Idl } from "@coral-xyz/anchor";
 import { useMemo } from "react";
-import idl from "../constants/vote_app.json";
+import voteAppIdl from "@/types/vote_app.json";
 import { PROGRAM_ID } from "../constants";
 
 export function useVoteProgram() {
-    const provider = useAnchorProvider();
+    const { provider, readProvider } = useAnchorProvider();
+    const idlWithAddress = useMemo(
+        () =>
+            ({
+                ...voteAppIdl,
+                address: PROGRAM_ID.toBase58(),
+            }) as Idl,
+        []
+    );
 
     const program = useMemo(() => {
-        if (!provider) return null;
-        return new Program(idl as any, provider);
-    }, [provider]);
+        return new Program(idlWithAddress, provider ?? readProvider);
+    }, [idlWithAddress, provider, readProvider]);
 
     return program;
 }
