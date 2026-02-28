@@ -4,11 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { BarChart3, CheckCircle, Clock, Hash, MessageSquare } from "lucide-react";
-import { useVoteProgram } from "../hooks/useVoteProgram";
-import { useAnchorProvider } from "../hooks/useAnchorProvider";
-import { PROGRAM_ID, TREASURY_CONFIG_SEED, X_MINT_SEED } from "../constants";
-import { ensureAssociatedTokenAccount } from "../utils/tokenAccounts";
+import { AlertTriangle, BarChart3, CheckCircle, Clock, Hash, MessageSquare } from "lucide-react";
+import { useVoteProgram } from "@/features/governance/hooks/useVoteProgram";
+import { useAnchorProvider } from "@/features/wallet/hooks/useAnchorProvider";
+import { PROGRAM_ID, TREASURY_CONFIG_SEED, X_MINT_SEED } from "@/features/governance/constants";
+import { ensureAssociatedTokenAccount } from "@/features/governance/utils/tokenAccounts";
+import { parseTxError } from "@/shared/utils/txError";
 
 interface ProposalUi {
     proposalId: number;
@@ -36,6 +37,7 @@ export default function ProposalList() {
     const { provider } = useAnchorProvider();
     const [proposals, setProposals] = useState<ProposalUi[]>([]);
     const [nowMs, setNowMs] = useState(() => Date.now());
+    const [actionMessage, setActionMessage] = useState<string | null>(null);
 
     const fetchProposals = useCallback(async () => {
         if (!program) return;
@@ -78,6 +80,7 @@ export default function ProposalList() {
 
     const handleVote = async (proposal: ProposalUi) => {
         if (!program || !provider) return;
+        setActionMessage(null);
 
         try {
             const [voterPda] = PublicKey.findProgramAddressSync(
@@ -124,8 +127,13 @@ export default function ProposalList() {
                 .rpc();
 
             await fetchProposals();
+            setActionMessage("✓ Vote submitted successfully.");
         } catch (error) {
-            console.error("Error voting:", error);
+            const parsed = parseTxError(error, "Failed to submit vote.");
+            setActionMessage(`Error: ${parsed.userMessage}`);
+            if (parsed.shouldLog) {
+                console.error("Error voting:", error);
+            }
         }
     };
 
@@ -140,6 +148,19 @@ export default function ProposalList() {
                     <p className="text-sm text-slate-400">Cast on-chain votes using governance tokens</p>
                 </div>
             </div>
+
+            {actionMessage && (
+                <div
+                    className={`mb-4 p-3 rounded-xl border flex items-center gap-2 ${
+                        actionMessage.startsWith("✓")
+                            ? "bg-teal-50 border-teal-200 text-teal-700"
+                            : "bg-red-50 border-red-200 text-red-700"
+                    }`}
+                >
+                    {actionMessage.startsWith("✓") ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+                    <span className="text-sm font-semibold">{actionMessage}</span>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 gap-8">
                 {proposals.map((proposal) => (

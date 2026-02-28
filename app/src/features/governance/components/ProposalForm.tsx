@@ -3,17 +3,18 @@
 import { useState } from "react";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { Calendar, FileText, PlusCircle, Sparkles } from "lucide-react";
-import { useVoteProgram } from "../hooks/useVoteProgram";
-import { useAnchorProvider } from "../hooks/useAnchorProvider";
+import { AlertTriangle, Calendar, CheckCircle, FileText, PlusCircle, Sparkles } from "lucide-react";
+import { useVoteProgram } from "@/features/governance/hooks/useVoteProgram";
+import { useAnchorProvider } from "@/features/wallet/hooks/useAnchorProvider";
 import {
     PROGRAM_ID,
     PROPOSAL_COUNTER_SEED,
     PROPOSAL_SEED,
     TREASURY_CONFIG_SEED,
     X_MINT_SEED,
-} from "../constants";
-import { ensureAssociatedTokenAccount } from "../utils/tokenAccounts";
+} from "@/features/governance/constants";
+import { ensureAssociatedTokenAccount } from "@/features/governance/utils/tokenAccounts";
+import { parseTxError } from "@/shared/utils/txError";
 
 interface ProposalCounterAccount {
     proposalCount: number;
@@ -39,11 +40,13 @@ export default function ProposalForm() {
     const [days, setDays] = useState(7);
     const [tokenStake, setTokenStake] = useState(1000);
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
 
     const handleCreateProposal = async () => {
         if (!program || !provider || !info) return;
 
         setLoading(true);
+        setMessage(null);
         try {
             const [proposalCounterPda] = PublicKey.findProgramAddressSync(
                 [Buffer.from(PROPOSAL_COUNTER_SEED)],
@@ -92,8 +95,13 @@ export default function ProposalForm() {
                 .rpc();
 
             setInfo("");
+            setMessage("✓ Proposal submitted successfully.");
         } catch (error: unknown) {
-            console.error("Error creating proposal:", error);
+            const parsed = parseTxError(error, "Failed to create proposal.");
+            setMessage(`Error: ${parsed.userMessage}`);
+            if (parsed.shouldLog) {
+                console.error("Error creating proposal:", error);
+            }
         } finally {
             setLoading(false);
         }
@@ -110,6 +118,19 @@ export default function ProposalForm() {
                     <p className="text-sm text-slate-400">Define an action the DAO can vote on</p>
                 </div>
             </div>
+
+            {message && (
+                <div
+                    className={`mb-6 p-3 rounded-xl flex items-center gap-2 border ${
+                        message.startsWith("✓")
+                            ? "bg-teal-50 border-teal-200 text-teal-700"
+                            : "bg-red-50 border-red-200 text-red-700"
+                    }`}
+                >
+                    {message.startsWith("✓") ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+                    <span className="text-sm font-semibold">{message}</span>
+                </div>
+            )}
 
             <div className="space-y-6">
                 <div>

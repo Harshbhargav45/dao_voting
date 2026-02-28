@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { LayoutGrid, Plus, ShieldCheck } from "lucide-react";
-import Dashboard from "../components/Dashboard";
-import ProposalForm from "../components/ProposalForm";
-import ProposalList from "../components/ProposalList";
-import AdminPanel from "../components/AdminPanel";
+import {
+  AdminPanel,
+  Dashboard,
+  ProposalForm,
+  ProposalList,
+} from "@/features/governance/components";
 
 export default function Home() {
   const [view, setView] = useState<"explorer" | "create" | "admin">("explorer");

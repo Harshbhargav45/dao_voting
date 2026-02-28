@@ -1,10 +1,10 @@
 "use client";
 
-import { useAnchorProvider } from "@/hooks/useAnchorProvider";
+import { useAnchorProvider } from "@/features/wallet/hooks/useAnchorProvider";
 import { Program, Idl } from "@coral-xyz/anchor";
 import { useMemo } from "react";
 import voteAppIdl from "@/types/vote_app.json";
-import { PROGRAM_ID } from "../constants";
+import { PROGRAM_ID } from "@/features/governance/constants";
 
 export function useVoteProgram() {
     const { provider, readProvider } = useAnchorProvider();

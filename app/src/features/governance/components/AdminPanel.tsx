@@ -4,8 +4,8 @@ import { useState } from "react";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { AlertTriangle, BarChart3, Gavel, Settings2, ShieldCheck, Wallet } from "lucide-react";
-import { useVoteProgram } from "../hooks/useVoteProgram";
-import { useAnchorProvider } from "../hooks/useAnchorProvider";
+import { useVoteProgram } from "@/features/governance/hooks/useVoteProgram";
+import { useAnchorProvider } from "@/features/wallet/hooks/useAnchorProvider";
 import {
     PROGRAM_ID,
     PROPOSAL_COUNTER_SEED,
@@ -13,8 +13,9 @@ import {
     TREASURY_CONFIG_SEED,
     VOTER_SEED,
     X_MINT_SEED,
-} from "../constants";
-import { ensureAssociatedTokenAccount } from "../utils/tokenAccounts";
+} from "@/features/governance/constants";
+import { ensureAssociatedTokenAccount } from "@/features/governance/utils/tokenAccounts";
+import { parseTxError } from "@/shared/utils/txError";
 
 export default function AdminPanel() {
     const program = useVoteProgram();
@@ -26,6 +27,14 @@ export default function AdminPanel() {
     const [tokensPerPurchase, setTokensPerPurchase] = useState(1000);
     const [winnerProposalId, setWinnerProposalId] = useState(1);
     const [closeProposalId, setCloseProposalId] = useState(1);
+
+    const handleActionError = (context: string, error: unknown) => {
+        const parsed = parseTxError(error, `${context} failed.`);
+        setMessage(`Error: ${parsed.userMessage}`);
+        if (parsed.shouldLog) {
+            console.error(`${context} failed:`, error);
+        }
+    };
 
     const requireAuth = () => {
         if (!program || !provider) {
@@ -76,8 +85,7 @@ export default function AdminPanel() {
                     : "✓ Treasury initialized successfully!"
             );
         } catch (error: unknown) {
-            const nextMessage = error instanceof Error ? error.message : String(error);
-            setMessage(`Error: ${nextMessage}`);
+            handleActionError("Treasury initialization", error);
         } finally {
             setLoading(null);
         }
@@ -108,8 +116,7 @@ export default function AdminPanel() {
 
             setMessage("✓ Proposal counter initialized!");
         } catch (error: unknown) {
-            const nextMessage = error instanceof Error ? error.message : String(error);
-            setMessage(`Error: ${nextMessage}`);
+            handleActionError("Proposal counter initialization", error);
         } finally {
             setLoading(null);
         }
@@ -129,8 +136,7 @@ export default function AdminPanel() {
 
             setMessage("✓ Winner picked successfully!");
         } catch (error: unknown) {
-            const nextMessage = error instanceof Error ? error.message : String(error);
-            setMessage(`Error: ${nextMessage}`);
+            handleActionError("Pick winner", error);
         } finally {
             setLoading(null);
         }
@@ -159,8 +165,7 @@ export default function AdminPanel() {
 
             setMessage("✓ Proposal account closed successfully!");
         } catch (error: unknown) {
-            const nextMessage = error instanceof Error ? error.message : String(error);
-            setMessage(`Error: ${nextMessage}`);
+            handleActionError("Close proposal", error);
         } finally {
             setLoading(null);
         }
@@ -188,8 +193,7 @@ export default function AdminPanel() {
 
             setMessage("✓ Voter account closed successfully!");
         } catch (error: unknown) {
-            const nextMessage = error instanceof Error ? error.message : String(error);
-            setMessage(`Error: ${nextMessage}`);
+            handleActionError("Close voter account", error);
         } finally {
             setLoading(null);
         }
@@ -209,8 +213,7 @@ export default function AdminPanel() {
 
             setMessage(`✓ Withdrew ${withdrawAmount} SOL successfully!`);
         } catch (error: unknown) {
-            const nextMessage = error instanceof Error ? error.message : String(error);
-            setMessage(`Error: ${nextMessage}`);
+            handleActionError("Withdraw SOL", error);
         } finally {
             setLoading(null);
         }

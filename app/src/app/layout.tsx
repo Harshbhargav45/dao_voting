@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AppWalletProvider from "../components/AppWalletProvider";
-import WalletButton from "../components/WalletButton";
+import { AppWalletProvider, WalletButton } from "@/features/wallet/components";
 
 export const metadata: Metadata = {
   title: "DAO Voting - Decentralized Governance",

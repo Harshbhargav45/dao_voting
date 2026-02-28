@@ -3,16 +3,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
-import { Activity, Coins, RefreshCw, ShieldCheck, Wallet, Zap } from "lucide-react";
-import { useAnchorProvider } from "../hooks/useAnchorProvider";
-import { useVoteProgram } from "../hooks/useVoteProgram";
+import { Activity, AlertTriangle, Coins, RefreshCw, ShieldCheck, Wallet, Zap } from "lucide-react";
+import { useAnchorProvider } from "@/features/wallet/hooks/useAnchorProvider";
+import { useVoteProgram } from "@/features/governance/hooks/useVoteProgram";
 import {
     PROGRAM_ID,
     SOL_VAULT_SEED,
     TREASURY_CONFIG_SEED,
     X_MINT_SEED,
-} from "../constants";
-import { ensureAssociatedTokenAccount } from "../utils/tokenAccounts";
+} from "@/features/governance/constants";
+import { ensureAssociatedTokenAccount } from "@/features/governance/utils/tokenAccounts";
+import { parseTxError } from "@/shared/utils/txError";
 
 interface TreasuryConfigAccount {
     treasuryTokenAccount: PublicKey;
@@ -49,6 +50,7 @@ export default function Dashboard() {
     const program = useVoteProgram();
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [actionMessage, setActionMessage] = useState<string | null>(null);
     const [stats, setStats] = useState({
         solBalance: 0,
         tokenSupply: 0,
@@ -142,6 +144,7 @@ export default function Dashboard() {
     const handleBuyTokens = async () => {
         if (!program || !provider) return;
         setLoading(true);
+        setActionMessage(null);
 
         try {
             const [xMintPda] = PublicKey.findProgramAddressSync([Buffer.from(X_MINT_SEED)], PROGRAM_ID);
@@ -171,8 +174,13 @@ export default function Dashboard() {
                 .rpc();
 
             await fetchStats();
+            setActionMessage("✓ Governance tokens purchased successfully.");
         } catch (error: unknown) {
-            console.error("Buy tokens failed", error);
+            const parsed = parseTxError(error, "Failed to buy governance tokens.");
+            setActionMessage(`Error: ${parsed.userMessage}`);
+            if (parsed.shouldLog) {
+                console.error("Buy tokens failed", error);
+            }
         } finally {
             setLoading(false);
         }
@@ -215,6 +223,19 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            {actionMessage && (
+                <div
+                    className={`mb-6 p-3 rounded-xl border flex items-center gap-2 ${
+                        actionMessage.startsWith("✓")
+                            ? "bg-teal-50 border-teal-200 text-teal-700"
+                            : "bg-red-50 border-red-200 text-red-700"
+                    }`}
+                >
+                    {actionMessage.startsWith("✓") ? <ShieldCheck size={16} /> : <AlertTriangle size={16} />}
+                    <span className="text-sm font-semibold">{actionMessage}</span>
+                </div>
+            )}
 
             <div className="grid-cols-3 gap-8 mb-12">
                 <div className="glass-card bg-teal-600 border-none text-white relative overflow-hidden group">
